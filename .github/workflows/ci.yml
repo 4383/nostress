@@ -261,7 +261,7 @@ jobs:
     # Only run on version tag pushes (v*.*.*)
     if: startsWith(github.ref, 'refs/tags/v')
     # Ensure all quality checks pass before publishing
-    needs: [lint, test, build, cli-integration]
+    needs: [lint, test, cli-integration]
     environment:
       name: pypi
       url: https://pypi.org/p/nostress
@@ -269,15 +269,30 @@ jobs:
       id-token: write  # Required for trusted publishing
 
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
         with:
-          name: dist-packages
-          path: dist/
+          # Fetch full history and tags for correct versioning
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Build package fresh for release
+        run: |
+          echo "Building package for tag: ${GITHUB_REF#refs/tags/}"
+          uv build
+          ls -la dist/
 
       - name: Verify artifacts before publishing
         run: |
-          ls -la dist/
+          echo "Tag reference: ${GITHUB_REF#refs/tags/}"
           echo "Files to be published:"
           find dist/ -name "*.whl" -o -name "*.tar.gz"
 
@@ -285,19 +300,29 @@ jobs:
           test -f dist/*.whl || (echo "❌ No wheel found" && exit 1)
           test -f dist/*.tar.gz || (echo "❌ No source distribution found" && exit 1)
 
-          # Extract and verify version is not a development version
-          VERSION=$(python -c "import pkg_resources; print(pkg_resources.get_distribution(pkg_resources.find_distributions('dist')[0]).version)")
-          echo "Package version: $VERSION"
+          # Extract version from wheel filename
+          WHEEL_FILE=$(ls dist/*.whl)
+          VERSION=$(echo "$WHEEL_FILE" | sed 's/.*nostress-\([^-]*\)-.*/\1/')
+          echo "Extracted version: $VERSION"
+
+          # Verify version matches tag
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Tag version: $TAG_VERSION"
 
           # Check for development version patterns
           if [[ "$VERSION" == *"dev"* || "$VERSION" == *"+"* ]]; then
             echo "❌ Development version detected: $VERSION"
-            echo "PyPI does not allow local versions (+) or development versions"
-            echo "Please create a proper release tag (e.g., v0.1.4)"
+            echo "This indicates the tag wasn't properly detected during build"
             exit 1
           fi
 
-          echo "✅ Version $VERSION is suitable for PyPI"
+          # Verify version matches tag
+          if [[ "$VERSION" != "$TAG_VERSION" ]]; then
+            echo "❌ Version mismatch: package=$VERSION, tag=$TAG_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Version $VERSION matches tag and is suitable for PyPI"
           echo "✅ All required artifacts present"
 
       - name: Publish to PyPI

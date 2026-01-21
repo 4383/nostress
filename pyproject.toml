@@ -53,8 +53,10 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.hatch.version.raw-options]
-# Ensure clean versions for PyPI releases
+# Clean versions for PyPI - remove local version identifiers
 local_scheme = "no-local-version"
+# Match tags like v1.2.3
+tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+.*)$"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nostress/_version.py"
