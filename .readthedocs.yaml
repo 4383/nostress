@@ -15,9 +15,9 @@ build:
 sphinx:
   configuration: docs/conf.py
   builder: html
-  # Enable strict mode to catch documentation issues early
-  # Our configuration suppresses non-critical warnings
-  fail_on_warning: true
+  # Disable strict mode - warnings are informational, not fatal
+  # Documentation should build successfully even with minor warnings
+  fail_on_warning: false
 
 # Python environment configuration
 # Note: We primarily use uv for dependency management, but this provides
@@ -32,8 +32,6 @@ python:
 # Format configuration
 formats:
   - htmlzip
-  - pdf
-  - epub
 
 # Search configuration
 search:

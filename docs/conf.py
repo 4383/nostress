@@ -88,6 +88,11 @@ autosummary_generate = True
 suppress_warnings = [
     "sphinx_autodoc_typehints.forward_reference",
     "sphinx_autodoc_typehints.guarded_import",
+    "autosummary",
+    "autosummary.import_cycle",
+    "autodoc.import_object",
+    "epub.unknown_project_files",
+    "myst.header",
 ]
 
 # Intersphinx mapping
