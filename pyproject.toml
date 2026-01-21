@@ -33,6 +33,15 @@ Repository = "https://github.com/4383/nostress.git"
 Issues = "https://github.com/4383/nostress/issues"
 Changelog = "https://github.com/4383/nostress/blob/master/CHANGELOG.md"
 
+[project.optional-dependencies]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-autobuild>=2024.2.4",
+    "furo>=2024.1.29",
+    "sphinx-autodoc-typehints>=1.25.2",
+    "myst-parser>=2.0.0",
+]
+
 [project.scripts]
 nostress = "nostress.main:app"
 

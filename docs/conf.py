@@ -119,8 +119,8 @@ html_theme_options = {
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
     "top_of_page_button": "edit",
-    "source_repository": "https://github.com/nostress/nostress",
-    "source_branch": "main",
+    "source_repository": "https://github.com/4383/nostress",
+    "source_branch": "master",
     "source_directory": "docs/",
 }
 
