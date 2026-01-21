@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Nostress Banner](docs/_static/images/banner.png)
+![Nostress Banner](https://raw.githubusercontent.com/4383/nostress/master/docs/_static/images/banner.png)
 
 </div>
 
@@ -173,7 +173,7 @@ Love Nostress? Support its development by sending some sats or connecting on Nos
 
 <div align="center">
 
-![Lightning QR Code](docs/_static/images/lightning.png)
+![Lightning QR Code](https://raw.githubusercontent.com/4383/nostress/master/docs/_static/images/lightning.png)
 
 *Scan to send lightning payments*
 
@@ -187,7 +187,7 @@ Your support helps maintain and improve Nostress, ensuring it remains free and o
 
 <div align="center">
 
-![Nostr QR Code](docs/_static/images/nostr.png)
+![Nostr QR Code](https://raw.githubusercontent.com/4383/nostress/master/docs/_static/images/nostr.png)
 
 *Scan to follow me on Nostr*
 
