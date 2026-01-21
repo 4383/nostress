@@ -10,18 +10,6 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-  jobs:
-    # Install uv package manager for modern Python dependency management
-    pre_create_environment:
-      - pip install --upgrade pip uv
-
-    # Install nostress package and documentation dependencies using uv
-    # This ensures all dependencies including the package itself are available
-    pre_build:
-      - uv sync --group docs
-      - uv pip install -e .
-      - python -c "import nostress; print('Nostress version:', nostress.__version__)"
-      - uv run sphinx-build --version
 
 # Sphinx documentation build configuration
 sphinx:
