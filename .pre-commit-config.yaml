@@ -1,0 +1,39 @@
+# Pre-commit configuration for nostress
+repos:
+  # Ruff - All-in-one Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Linter (replaces flake8, isort, bandit, pyupgrade, and more)
+      - id: ruff
+        args: [--fix]
+      # Formatter (replaces black)
+      - id: ruff-format
+
+  # Basic file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+      # Check for large files (>500KB)
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      # Validate YAML files
+      - id: check-yaml
+      # Validate TOML files
+      - id: check-toml
+      # Check for merge conflicts
+      - id: check-merge-conflict
+      # Ensure Python files are valid syntax
+      - id: check-ast
+
+  # Security scanning
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: uv.lock

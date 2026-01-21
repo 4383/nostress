@@ -1,0 +1,137 @@
+[project]
+name = "nostress"
+authors = [
+	{name = "Hervé Beraud", email = "herveberaud.pro@gmail.com"}
+]
+dynamic = ["version"]
+description = "Modern Python CLI for Nostr interactions - key generation, event creation, and relay management"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.9.0,<1.0.0",
+    "rich>=13.0.0,<14.0.0",
+    "cryptography>=41.0.0",
+    "base58>=2.1.0,<3.0.0",
+    "pydantic>=2.0.0,<3.0.0"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["nostr", "cli", "tooling"]
+
+[project.urls]
+Homepage = "https://github.com/4383/nostress"
+Documentation = "https://nostress.readthedocs.org"
+Repository = "https://github.com/4383/nostress.git"
+Issues = "https://github.com/4383/nostress/issues"
+Changelog = "https://github.com/4383/nostress/blob/master/CHANGELOG.md"
+
+[project.scripts]
+nostress = "nostress.main:app"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "nostress/_version.py"
+
+[tool.ruff]
+# Target Python 3.12+
+target-version = "py312"
+line-length = 88
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "nostress/_version.py",
+]
+
+[tool.ruff.lint]
+# Enable recommended rules + additional useful ones
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "S",     # flake8-bandit (security)
+    "T20",   # flake8-print
+    "SIM",   # flake8-simplify
+]
+
+# Ignore specific rules that might be too strict
+ignore = [
+    "S101",  # Use of assert (common in tests)
+    "T201",  # print statements (useful for CLI apps)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow print statements in CLI modules
+"nostress/cli/*.py" = ["T201"]
+"nostress/main.py" = ["T201"]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Format docstrings
+docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=nostress",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=30",
+]
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "cli: marks tests as CLI tests",
+]
+
+[dependency-groups]
+dev = [
+    "detect-secrets>=1.5.0",
+    "pre-commit>=4.5.1",
+    "ruff>=0.14.13",
+    "build>=1.0.0",
+]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.12.0",
+]
+dev-test = [
+    { include-group = "dev" },
+    { include-group = "test" },
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-autobuild>=2024.2.4",
+    "furo>=2024.1.29",
+    "sphinx-autodoc-typehints>=1.25.2",
+    "myst-parser>=2.0.0",
+]

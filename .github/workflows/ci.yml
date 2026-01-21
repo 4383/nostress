@@ -1,0 +1,294 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  # Use consistent Python version across jobs
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    name: Code Quality (Pre-commit Hooks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group dev-test
+
+      - name: Run unit tests
+        run: uv run pytest tests/unit/ -v --cov=nostress --cov-report=term-missing
+
+      - name: Run integration tests
+        run: uv run pytest tests/integration/ -v
+
+      - name: Generate coverage report
+        run: uv run pytest tests/ --cov=nostress --cov-report=xml
+
+      - name: Upload coverage to Codecov (optional)
+        uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch full history for versioning
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install build dependencies
+        run: uv sync
+
+      - name: Build package
+        run: uv build
+
+      - name: Verify build artifacts
+        run: |
+          ls -la dist/
+          # Basic validation that packages were created
+          test -f dist/*.whl
+          test -f dist/*.tar.gz
+
+      - name: Test installation from wheel
+        run: |
+          # Create a clean environment and test installation
+          uv venv test-env
+          source test-env/bin/activate
+          pip install dist/*.whl
+          nostress --help
+          nostress keys generate --help
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-packages
+          path: dist/
+
+  cli-integration:
+    name: CLI Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Install from wheel for CLI testing
+        run: |
+          uv venv cli-test
+          source cli-test/bin/activate
+          pip install dist/*.whl
+
+      - name: Test CLI commands
+        run: |
+          source cli-test/bin/activate
+          # Test basic functionality
+          nostress --help
+
+          # Test key generation in different formats
+          nostress keys generate --format hex
+          nostress keys generate --format bech32
+          nostress keys generate --format both --json
+
+          # Test key validation
+          HEX_KEY=$(nostress keys generate --json | python -c "import sys, json; print(json.load(sys.stdin)['private_key'])")
+          nostress keys validate "$HEX_KEY"
+
+          BECH32_KEY=$(nostress keys generate --format bech32 --json | python -c "import sys, json; print(json.load(sys.stdin)['private_key'])")
+          nostress keys validate "$BECH32_KEY" --type nsec
+
+  # Optional: Security scan
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install security tools
+        run: |
+          uv tool install bandit[toml]
+          uv tool install safety
+
+      - name: Run bandit security scan
+        run: uv tool run bandit -r nostress/ -f json -o bandit-report.json || true
+
+      - name: Run safety check
+        run: uv tool run safety check --json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+
+  docs:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install documentation dependencies
+        run: uv sync --group docs
+
+      - name: Build documentation
+        run: |
+          cd docs/
+          uv run sphinx-build -b html . _build/html -W --keep-going
+
+      - name: Check for broken links
+        run: |
+          cd docs/
+          uv run sphinx-build -b linkcheck . _build/linkcheck || true
+
+      - name: Validate documentation structure
+        run: |
+          # Check that essential files exist
+          test -f docs/_build/html/index.html
+          test -f docs/_build/html/api-reference.html
+          test -f docs/_build/html/cli-reference.html
+          test -f docs/_build/html/installation.html
+          test -f docs/_build/html/quickstart.html
+
+          # Check that search functionality is present
+          test -f docs/_build/html/searchindex.js
+
+          # Basic content validation
+          grep -q "Nostress" docs/_build/html/index.html
+          grep -q "NostrKeypair" docs/_build/html/api-reference.html
+
+          echo "✓ All documentation validation checks passed"
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: docs/_build/html/
+          retention-days: 30
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    # Only run on tag pushes
+    if: startsWith(github.ref, 'refs/tags/')
+    # Ensure all quality checks pass before publishing
+    needs: [lint, test, build, cli-integration]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/nostress
+    permissions:
+      id-token: write  # Required for trusted publishing
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Verify artifacts before publishing
+        run: |
+          ls -la dist/
+          echo "Files to be published:"
+          find dist/ -name "*.whl" -o -name "*.tar.gz"
+
+          # Ensure we have both wheel and source distribution
+          test -f dist/*.whl || (echo "❌ No wheel found" && exit 1)
+          test -f dist/*.tar.gz || (echo "❌ No source distribution found" && exit 1)
+
+          echo "✅ All required artifacts present"
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
+          print-hash: true
