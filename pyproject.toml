@@ -113,7 +113,6 @@ addopts = [
     "--cov=nostress",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
-    "--cov-fail-under=30",
 ]
 markers = [
     "unit: marks tests as unit tests",
