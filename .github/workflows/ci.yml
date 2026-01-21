@@ -258,8 +258,8 @@ jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    # Only run on tag pushes
-    if: startsWith(github.ref, 'refs/tags/')
+    # Only run on version tag pushes (v*.*.*)
+    if: startsWith(github.ref, 'refs/tags/v')
     # Ensure all quality checks pass before publishing
     needs: [lint, test, build, cli-integration]
     environment:
@@ -285,6 +285,19 @@ jobs:
           test -f dist/*.whl || (echo "❌ No wheel found" && exit 1)
           test -f dist/*.tar.gz || (echo "❌ No source distribution found" && exit 1)
 
+          # Extract and verify version is not a development version
+          VERSION=$(python -c "import pkg_resources; print(pkg_resources.get_distribution(pkg_resources.find_distributions('dist')[0]).version)")
+          echo "Package version: $VERSION"
+
+          # Check for development version patterns
+          if [[ "$VERSION" == *"dev"* || "$VERSION" == *"+"* ]]; then
+            echo "❌ Development version detected: $VERSION"
+            echo "PyPI does not allow local versions (+) or development versions"
+            echo "Please create a proper release tag (e.g., v0.1.4)"
+            exit 1
+          fi
+
+          echo "✅ Version $VERSION is suitable for PyPI"
           echo "✅ All required artifacts present"
 
       - name: Publish to PyPI

@@ -52,6 +52,10 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.version.raw-options]
+# Ensure clean versions for PyPI releases
+local_scheme = "no-local-version"
+
 [tool.hatch.build.hooks.vcs]
 version-file = "nostress/_version.py"
 
