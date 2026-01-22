@@ -1,10 +1,17 @@
 """Integration tests for CLI tips commands."""
 
 import json
+import re
 
 from typer.testing import CliRunner
 
 from nostress.main import app
+
+
+def strip_ansi(text):
+    """Remove ANSI escape sequences from text."""
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    return ansi_escape.sub("", text)
 
 
 class TestTipsShow:
@@ -334,31 +341,35 @@ class TestTipsCommandHelp:
         result = self.runner.invoke(app, ["tips", "show", "--help"])
 
         assert result.exit_code == 0
-        assert "--format" in result.stdout
-        assert "--output" in result.stdout
-        assert "--qr" in result.stdout
+        clean_output = strip_ansi(result.stdout)
+        assert "--format" in clean_output
+        assert "--output" in clean_output
+        assert "--qr" in clean_output
 
     def test_tips_lightning_help(self):
         """Test tips lightning command help."""
         result = self.runner.invoke(app, ["tips", "lightning", "--help"])
 
         assert result.exit_code == 0
-        assert "--format" in result.stdout
+        clean_output = strip_ansi(result.stdout)
+        assert "--format" in clean_output
 
     def test_tips_nostr_help(self):
         """Test tips nostr command help."""
         result = self.runner.invoke(app, ["tips", "nostr", "--help"])
 
         assert result.exit_code == 0
-        assert "--format" in result.stdout
+        clean_output = strip_ansi(result.stdout)
+        assert "--format" in clean_output
 
     def test_tips_logo_help(self):
         """Test tips logo command help."""
         result = self.runner.invoke(app, ["tips", "logo", "--help"])
 
         assert result.exit_code == 0
-        assert "--plain" in result.stdout
-        assert "--output" in result.stdout
+        clean_output = strip_ansi(result.stdout)
+        assert "--plain" in clean_output
+        assert "--output" in clean_output
 
     def test_tips_no_subcommand(self):
         """Test tips command without subcommand shows error."""
@@ -367,9 +378,10 @@ class TestTipsCommandHelp:
         assert result.exit_code == 2  # Missing command error
         # Check both stdout and stderr for the error message
         output = result.stdout + (result.stderr or "")
-        assert "Missing command" in output
-        assert "nostress tips [OPTIONS] COMMAND [ARGS]" in output
-        assert "nostress tips -h" in output
+        clean_output = strip_ansi(output)
+        assert "Missing command" in clean_output
+        assert "nostress tips [OPTIONS] COMMAND [ARGS]" in clean_output
+        assert "nostress tips -h" in clean_output
 
 
 class TestTipsVerboseMode:
