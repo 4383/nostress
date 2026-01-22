@@ -14,7 +14,15 @@ Nostress Documentation
    :target: https://pypi.org/project/nostress/
    :alt: Python Version
 
-.. image:: https://img.shields.io/badge/Coverage-30%25-orange?style=flat-square&logo=pytest&logoColor=white&labelColor=orange
+.. image:: https://github.com/4383/nostress/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/4383/nostress/actions/workflows/ci.yml
+   :alt: CI Tests
+
+.. image:: https://readthedocs.org/projects/nostress/badge/?version=latest&style=flat-square
+   :target: https://nostress.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+.. image:: https://img.shields.io/badge/Coverage-64%25-brightgreen?style=flat-square&logo=pytest&logoColor=white&labelColor=brightgreen
    :target: https://github.com/4383/nostress
    :alt: Test Coverage
 

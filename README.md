@@ -8,8 +8,9 @@
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/nostress?style=flat-square&logo=pypi&logoColor=white&label=Downloads&labelColor=blue&color=blue)](https://pypi.org/project/nostress/)
 [![Python Version](https://img.shields.io/pypi/pyversions/nostress?style=flat-square&logo=python&logoColor=white&label=Python&labelColor=blue&color=blue)](https://pypi.org/project/nostress/)
+[![CI Tests](https://github.com/4383/nostress/actions/workflows/ci.yml/badge.svg)](https://github.com/4383/nostress/actions/workflows/ci.yml)
 [![Documentation Status](https://readthedocs.org/projects/nostress/badge/?version=latest&style=flat-square)](https://nostress.readthedocs.io/en/latest/?badge=latest)
-[![Test Coverage](https://img.shields.io/badge/Coverage-30%25-orange?style=flat-square&logo=pytest&logoColor=white&labelColor=orange)](https://github.com/4383/nostress)
+[![Test Coverage](https://img.shields.io/badge/Coverage-64%25-brightgreen?style=flat-square&logo=pytest&logoColor=white&labelColor=brightgreen)](https://github.com/4383/nostress)
 [![Lightning](https://img.shields.io/badge/⚡-hberaud@nostrcheck.me-yellow?style=flat-square&logo=lightning&logoColor=white&labelColor=orange)](https://hberaud@nostrcheck.me)
 
 > **A modern, secure, and lightning-fast CLI for Nostr protocol interactions**
