@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-01-22
+
+### Added
+
+- Added missing unit tests (tips command)
+- Added missing badges
+
+### Changed
+
+- Instruct claude about its expected deliverables
+
 ## [0.1.0] - 2026-01-21
 
 ### Added
@@ -69,5 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Linting**: Ruff for fast, comprehensive code quality checks
 - **Security**: Multi-layered security scanning and validation
 
-[unreleased]: https://github.com/4383/nostress/compare/0.1.0...HEAD
+[unreleased]: https://github.com/4383/nostress/compare/0.1.6...HEAD
+[0.1.6]: https://github.com/4383/nostress/releases/tag/0.1.6
 [0.1.0]: https://github.com/4383/nostress/releases/tag/0.1.0
