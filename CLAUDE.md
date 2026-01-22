@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Claude's Core Obligations
+
+**CRITICAL REQUIREMENTS**: When Claude works on any code in this repository, Claude MUST:
+
+1. **Write Documentation**: Every function, class, method, and module must have comprehensive docstrings and appropriate comments
+2. **Write Tests**: Every piece of functionality must have corresponding unit tests and integration tests where applicable
+3. **Run Tests**: All existing tests must pass, and new tests must be written and passing before work is complete
+4. **No Exceptions**: These requirements apply to ALL code work - new features, bug fixes, refactoring, or any modifications
+
+**Development Workflow**: Documentation and tests are not optional add-ons - they are integral parts of the development process that must be completed alongside the code itself.
+
 ## Development Commands
 
 This project uses `uv` for package management. Always use `uv run` when executing nostress commands during development.
@@ -140,7 +151,16 @@ verbose = os.environ.get("NOSTRESS_VERBOSE", "").strip() == "1"
 
 ## Documentation Standards
 
-**Documentation Requirements**: All runtime code must be thoroughly documented to enable automated documentation generation and maintain project knowledge. Documentation is not optional—it's a critical component of the development process.
+**MANDATORY DOCUMENTATION**: All runtime code must be thoroughly documented to enable automated documentation generation and maintain project knowledge. Documentation is not optional—it's a critical component of the development process.
+
+**Claude's Documentation Obligation**: When Claude writes, modifies, or refactors any code, Claude MUST write corresponding documentation. This includes:
+- Comprehensive docstrings for all new functions, classes, and methods
+- Updated docstrings for any modified functionality
+- Module-level documentation for new files
+- Inline comments for complex logic or business rules
+- Updates to this CLAUDE.md file for architectural changes
+
+**No Code Without Documentation**: No code changes should be committed or considered complete without proper documentation. Documentation must be written during development, not after.
 
 ### Documentation Guidelines
 
@@ -178,7 +198,16 @@ verbose = os.environ.get("NOSTRESS_VERBOSE", "").strip() == "1"
 
 ## Testing Requirements
 
-**Mandatory Testing**: Claude must run unit tests whenever working on code to ensure all functionality remains intact. Testing is a critical verification step that cannot be skipped.
+**MANDATORY TESTING**: Claude must run unit tests whenever working on code to ensure all functionality remains intact. Testing is a critical verification step that cannot be skipped.
+
+**Claude's Testing Obligation**: When Claude writes, modifies, or refactors any code, Claude MUST write corresponding tests. This includes:
+- Unit tests for all new functions, classes, and methods
+- Updated tests for any modified functionality
+- Integration tests for new CLI commands and features
+- Edge case and error condition testing
+- Comprehensive testing for cryptographic functions
+
+**No Code Without Tests**: No code changes should be committed or considered complete without proper test coverage. Tests must be written during development, not after. All tests must pass before work is considered complete.
 
 ### Testing Workflow
 
