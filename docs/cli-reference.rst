@@ -44,6 +44,10 @@ Commands
 
    Key management operations (generate, validate, convert).
 
+.. option:: tips
+
+   Support and sponsorship information for Nostr development.
+
 Keys Commands
 -------------
 
@@ -209,6 +213,193 @@ Planned functionality:
 - Batch conversion of multiple keys
 - File-based conversion operations
 
+Tips Commands
+-------------
+
+.. program:: nostress tips
+
+The ``tips`` subcommand group provides ways to support Nostr development and connect with the project.
+
+Synopsis::
+
+    nostress tips [OPTIONS] COMMAND [ARGS]...
+
+Show Command
+~~~~~~~~~~~~
+
+.. program:: nostress tips show
+
+Display comprehensive support and sponsorship information.
+
+Synopsis::
+
+    nostress tips show [OPTIONS]
+
+Description
+^^^^^^^^^^^
+
+Shows available ways to support Nostr development through Lightning Network zaps,
+Bitcoin donations, and sponsorship options. Perfect for sharing with users who
+want to support the project.
+
+Options
+^^^^^^^
+
+.. option:: --format <format>, -f <format>
+
+   Output format for the information. Choices:
+
+   - ``rich`` (default): Rich formatted panels with styling
+   - ``table``: Clean table format
+   - ``json``: JSON format for automation
+   - ``text``: Plain text format
+
+.. option:: --output <file>, -o <file>
+
+   Save output to file instead of displaying on screen.
+
+.. option:: --qr
+
+   Include QR codes for easy scanning. Only works with ``rich`` format.
+   Requires the ``qrcode`` package to be installed.
+
+Examples
+^^^^^^^^
+
+Show support information::
+
+    nostress tips show
+
+Show in table format::
+
+    nostress tips show --format table
+
+Save to file for sharing::
+
+    nostress tips show --format text --output support-info.txt
+
+Show with QR codes::
+
+    nostress tips show --qr
+
+Lightning Command
+~~~~~~~~~~~~~~~~~
+
+.. program:: nostress tips lightning
+
+Display Lightning Network address for zaps.
+
+Synopsis::
+
+    nostress tips lightning [OPTIONS]
+
+Description
+^^^^^^^^^^^
+
+Shows just the Lightning Network address for quick copying or sharing.
+Perfect for adding to documentation or sharing in Nostr posts.
+
+Options
+^^^^^^^
+
+.. option:: --format <format>, -f <format>
+
+   Output format. Choices:
+
+   - ``text`` (default): Plain text address
+   - ``json``: JSON format with structured data
+
+Examples
+^^^^^^^^
+
+Get Lightning address::
+
+    nostress tips lightning
+
+Get as JSON for scripting::
+
+    nostress tips lightning --format json
+
+Nostr Command
+~~~~~~~~~~~~~
+
+.. program:: nostress tips nostr
+
+Display Nostr public key for following.
+
+Synopsis::
+
+    nostress tips nostr [OPTIONS]
+
+Description
+^^^^^^^^^^^
+
+Shows the developer's Nostr public key for following and zapping.
+
+Options
+^^^^^^^
+
+.. option:: --format <format>, -f <format>
+
+   Output format. Choices:
+
+   - ``text`` (default): Plain text public key
+   - ``json``: JSON format with structured data
+
+Examples
+^^^^^^^^
+
+Get Nostr public key::
+
+    nostress tips nostr
+
+Get as JSON for automation::
+
+    nostress tips nostr --format json
+
+Logo Command
+~~~~~~~~~~~~
+
+.. program:: nostress tips logo
+
+Display the Nostress ASCII art logo.
+
+Synopsis::
+
+    nostress tips logo [OPTIONS]
+
+Description
+^^^^^^^^^^^
+
+Shows the beautiful ASCII art logo with lightning-themed colors.
+Perfect for documentation, presentations, or just admiring the artwork!
+
+Options
+^^^^^^^
+
+.. option:: --plain, -p
+
+   Display plain text without colors.
+
+.. option:: --output <file>, -o <file>
+
+   Save logo to file instead of displaying on screen.
+
+Examples
+^^^^^^^^
+
+Display colorful logo::
+
+    nostress tips logo
+
+Display without colors::
+
+    nostress tips logo --plain
+
+Save logo to file::
+
+    nostress tips logo --output logo.txt
+
 Exit Codes
 ----------
 
@@ -332,6 +523,7 @@ JSON Output
 Use ``--json`` flag to get machine-readable output::
 
     nostress keys generate --json | jq '.private_key.hex'
+    nostress tips show --format json | jq '.lightning_address'
 
 This is perfect for shell scripts and automation pipelines.
 
