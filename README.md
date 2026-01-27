@@ -86,9 +86,9 @@ nostress keys validate nsec1... --type nsec
 nostress keys validate npub1... --type npub
 ```
 
-**Format Conversion** *(Coming Soon)*
+**Format Conversion**
 ```bash
-# Convert between formats
+# Convert between hex and bech32 formats
 nostress keys convert nsec1... --to hex
 nostress keys convert abc123... --to bech32 --type private
 ```
@@ -149,11 +149,11 @@ Nostress follows XDG Base Directory standards for configuration:
 **Current Features (v0.1.x)**
 - ✅ Secure key generation (hex/bech32)
 - ✅ Key validation and verification
+- ✅ Format conversion between hex/bech32
 - ✅ Rich terminal output and JSON support
 - ✅ Encrypted key storage
 
 **Coming Soon (v0.2.x)**
-- 🔄 Format conversion between hex/bech32
 - 📝 Event creation and signing
 - 🔗 Relay connection management
 - 🏪 Event publishing and querying

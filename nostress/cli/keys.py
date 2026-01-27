@@ -355,17 +355,235 @@ def convert(
     key_type: str | None = typer.Option(
         None, "--type", "-t", help="Key type if ambiguous: private or public"
     ),
+    output: str | None = typer.Option(
+        None, "--output", "-o", help="Save output to file instead of displaying"
+    ),
+    json_output: bool = typer.Option(
+        False, "--json", "-j", help="Output in JSON format"
+    ),
 ) -> None:
     """Convert key between hex and bech32 formats.
 
     Converts keys between hexadecimal and bech32 (nsec/npub) formats.
+    Bech32 keys (nsec/npub prefixed) are automatically detected.
+    Hex keys require --type flag to specify private or public.
 
     Examples:
         nostress keys convert abc123...def --to bech32 --type private
         nostress keys convert nsec1... --to hex
+        nostress keys convert npub1... --to hex --json
+        nostress keys convert nsec1... --to hex --output converted.txt
     """
-    echo_warning("Convert command not yet implemented")
-    echo_info("This feature will be available in a future version")
+    try:
+        # Get verbose mode from environment variable
+        import os
+
+        verbose = os.environ.get("NOSTRESS_VERBOSE", "").strip() == "1"
+
+        # Clean input key
+        key = key.strip()
+
+        # Validate target format
+        if target_format.lower() not in ["hex", "bech32"]:
+            echo_error(f"Invalid target format: {target_format}")
+            echo_info("Valid formats: hex, bech32")
+            raise typer.Exit(1) from None
+
+        target_format = target_format.lower()
+        target_key_format = (
+            KeyFormat.HEX if target_format == "hex" else KeyFormat.BECH32
+        )
+
+        # Validate output path if provided
+        output_path = None
+        if output:
+            try:
+                output_path = validate_output_path(output)
+            except typer.BadParameter as e:
+                echo_error(str(e))
+                raise typer.Exit(1) from None
+
+        # Detect key type and parse key
+        parsed_key = None
+        original_format = None
+        original_type = None
+
+        if verbose:
+            echo_info("Detecting key type and format...")
+
+        # Auto-detect bech32 keys
+        if key.startswith("nsec"):
+            if verbose:
+                echo_info("Detected nsec (private) bech32 key")
+            try:
+                from ..core.models import NostrPrivateKey
+
+                parsed_key = NostrPrivateKey.from_bech32(key)
+                original_format = "bech32"
+                original_type = "private"
+            except Exception as e:
+                echo_error(f"Invalid nsec key: {e}")
+                raise typer.Exit(1) from None
+
+        elif key.startswith("npub"):
+            if verbose:
+                echo_info("Detected npub (public) bech32 key")
+            try:
+                from ..core.models import NostrPublicKey
+
+                parsed_key = NostrPublicKey.from_bech32(key)
+                original_format = "bech32"
+                original_type = "public"
+            except Exception as e:
+                echo_error(f"Invalid npub key: {e}")
+                raise typer.Exit(1) from None
+
+        elif len(key) == 64 and all(c in "0123456789abcdefABCDEF" for c in key):
+            # Hex key - requires type specification
+            if key_type is None:
+                echo_error("Hex keys require --type flag to specify private or public")
+                echo_info("Examples:")
+                echo_info(
+                    "  nostress keys convert YOUR_HEX_KEY --to bech32 --type private"
+                )
+                echo_info(
+                    "  nostress keys convert YOUR_HEX_KEY --to bech32 --type public"
+                )
+                raise typer.Exit(1) from None
+
+            key_type = key_type.lower()
+            if key_type not in ["private", "public"]:
+                echo_error(f"Invalid key type: {key_type}")
+                echo_info("Valid types: private, public")
+                raise typer.Exit(1) from None
+
+            if verbose:
+                echo_info(f"Detected hex {key_type} key")
+
+            try:
+                if key_type == "private":
+                    from ..core.models import NostrPrivateKey
+
+                    parsed_key = NostrPrivateKey.from_hex(key)
+                    original_type = "private"
+                else:
+                    from ..core.models import NostrPublicKey
+
+                    parsed_key = NostrPublicKey.from_hex(key)
+                    original_type = "public"
+                original_format = "hex"
+            except Exception as e:
+                echo_error(f"Invalid {key_type} hex key: {e}")
+                raise typer.Exit(1) from None
+
+        else:
+            echo_error("Could not detect key type")
+            echo_info("Key must be:")
+            echo_info("  • 64-character hex string with --type flag")
+            echo_info("  • bech32 string starting with nsec (private) or npub (public)")
+            raise typer.Exit(1) from None
+
+        # Check if conversion is needed
+        current_format = KeyFormat.HEX if original_format == "hex" else KeyFormat.BECH32
+        if current_format == target_key_format:
+            echo_warning(f"Key is already in {target_format} format")
+            if verbose:
+                echo_info("No conversion needed")
+            # Still output the key for consistency
+            converted_key = key
+        else:
+            # Perform conversion
+            if verbose:
+                echo_info(f"Converting from {original_format} to {target_format}...")
+
+            try:
+                converted_key = parsed_key.to_format(target_key_format)
+            except Exception as e:
+                echo_error(f"Conversion failed: {e}")
+                raise typer.Exit(1) from None
+
+        # Format output
+        if json_output:
+            output_data = {
+                "original_key": key,
+                "original_format": original_format,
+                "original_type": original_type,
+                "converted_key": converted_key,
+                "target_format": target_format,
+            }
+            content = format_as_json(output_data)
+            if not output_path:
+                console.print(content)
+                return
+        else:
+            if verbose:
+                # Rich formatting for verbose mode
+                from rich.panel import Panel
+
+                info_lines = []
+                info_lines.append(f"[dim]Original format:[/dim] {original_format}")
+                info_lines.append(f"[dim]Original type:[/dim] {original_type}")
+                info_lines.append(f"[dim]Target format:[/dim] {target_format}")
+                info_lines.append("")
+                info_lines.append("[bold]Original key:[/bold]")
+                info_lines.append(f"  {key}")
+                info_lines.append("")
+                info_lines.append("[bold]Converted key:[/bold]")
+                info_lines.append(f"  {converted_key}")
+
+                panel = Panel(
+                    "\n".join(info_lines), title="Key Conversion", border_style="blue"
+                )
+
+                if output_path:
+                    # For file output, use simple text format
+                    content = f"""# Nostress Key Conversion
+Original key: {key}
+Original format: {original_format}
+Original type: {original_type}
+Target format: {target_format}
+
+Converted key: {converted_key}
+"""
+                else:
+                    console.print(panel)
+                    return  # Already displayed with rich panel
+            else:
+                # Simple output format
+                if current_format == target_key_format:
+                    echo_success(f"Key is already in {target_format} format")
+                    console.print(f"  Result: {converted_key}")
+                else:
+                    echo_success(
+                        f"Converted {original_format} {original_type} key to "
+                        f"{target_format} format"
+                    )
+                    console.print(f"  Result: {converted_key}")
+
+                if output_path:
+                    content = converted_key
+                else:
+                    return  # Already displayed
+
+        # Write to file if requested
+        if output_path:
+            write_output(content, output_path)
+            if verbose:
+                echo_success(f"Converted key saved to {output_path}")
+            else:
+                echo_success(f"Converted key written to {output_path}")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        echo_error(f"Conversion error: {e}")
+        import os
+
+        if os.environ.get("NOSTRESS_VERBOSE", "").strip() == "1":
+            import traceback
+
+            console_err.print(f"[dim]{traceback.format_exc()}[/dim]")
+        raise typer.Exit(1) from None
 
 
 if __name__ == "__main__":
